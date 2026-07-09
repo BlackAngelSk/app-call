@@ -13,7 +13,9 @@ if errorlevel 1 (
 
 where cargo >nul 2>nul
 if errorlevel 1 (
-  echo cargo was not found. Install Rust from https://rustup.rs/ and reopen your shell.
+  echo [app-call] cargo was not found. Install Rust from https://rustup.rs/ and reopen your shell.
+  echo.
+  pause
   exit /b 1
 )
 
@@ -25,16 +27,40 @@ for /f "tokens=1,2 delims=." %%a in ("%CARGO_VER%") do (
 )
 if %CARGO_MINOR% LSS 85 (
   echo [app-call] Rust 1.85 or newer is required (found %CARGO_VER%). Run: rustup update stable
+  echo.
+  pause
   exit /b 1
 )
 
 if not defined APP_CALL_PORT set "APP_CALL_PORT=9000"
 
+rem Use console mode by default on VMs or when explicitly requested.
+rem Set APP_CALL_CONSOLE=0 to force GUI mode.
+if not defined APP_CALL_CONSOLE set "APP_CALL_CONSOLE=1"
+
 set "RUST_BACKTRACE=1"
-echo [%date% %time%] starting app-call port=%APP_CALL_PORT%> "%LOG_PATH%"
+echo [%date% %time%] starting app-call port=%APP_CALL_PORT% console=%APP_CALL_CONSOLE%> "%LOG_PATH%"
 echo [%date% %time%] cwd=%CD%>> "%LOG_PATH%"
+
+echo [app-call] Building and starting (log: %LOG_PATH%)...
+echo.
 
 cargo run -p desktop %* >> "%LOG_PATH%" 2>&1
 set "APP_CALL_EXIT=%ERRORLEVEL%"
+
+if %APP_CALL_EXIT% NEQ 0 (
+  echo.
+  echo [app-call] Process exited with error code %APP_CALL_EXIT%.
+  echo [app-call] Full log:
+  echo ────────────────────────────────────────
+  type "%LOG_PATH%"
+  echo ────────────────────────────────────────
+  echo.
+  echo [app-call] Log saved to: %LOG_PATH%
+  echo.
+  pause
+  exit /b %APP_CALL_EXIT%
+)
+
 type "%LOG_PATH%"
-exit /b %APP_CALL_EXIT%
+exit /b 0

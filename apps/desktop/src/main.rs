@@ -826,12 +826,37 @@ fn write_startup_error(data_dir: &PathBuf, error: &str) {
 
 fn is_graphics_backend_unavailable(error: &str) -> bool {
     let lower = error.to_lowercase();
+    // Catch any GPU / graphics / rendering failure so we can fall back to
+    // console mode.  This is intentionally broad: on VMs and headless
+    // machines the exact error message varies by OS, driver, and backend
+    // (wgpu / glow / D3D12 / DXGI / Vulkan / EGL / OpenGL / …).
     lower.contains("no suitable adapter found")
         || lower.contains("requires opengl 2.0+")
         || lower.contains("failed to create wgpu adapter")
         || lower.contains("no backend")
         || lower.contains("egl")
         || lower.contains("vulkan")
+        || lower.contains("d3d12")
+        || lower.contains("dxgi")
+        || lower.contains("direct3d")
+        || lower.contains("directx")
+        || lower.contains("opengl")
+        || lower.contains("gles")
+        || lower.contains("angle")
+        || lower.contains("adapter")
+        || lower.contains("surface")
+        || lower.contains("swapchain")
+        || lower.contains("device lost")
+        || lower.contains("device removed")
+        || lower.contains("gpu")
+        || lower.contains("wgpu")
+        || lower.contains("glow")
+        || lower.contains("render")
+        || lower.contains("graphics")
+        || lower.contains("window")
+        || lower.contains("display")
+        || lower.contains("monitor")
+        || lower.contains("headless")
 }
 
 fn startup_log_paths(data_dir: &std::path::Path) -> Vec<PathBuf> {
