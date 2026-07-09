@@ -45,22 +45,16 @@ echo [%date% %time%] cwd=%CD%>> "%LOG_PATH%"
 echo [app-call] Building and starting (log: %LOG_PATH%)...
 echo.
 
-cargo run -p desktop %* >> "%LOG_PATH%" 2>&1
+cargo run -p desktop %* 2>>"%LOG_PATH%"
 set "APP_CALL_EXIT=%ERRORLEVEL%"
 
 if %APP_CALL_EXIT% NEQ 0 (
   echo.
   echo [app-call] Process exited with error code %APP_CALL_EXIT%.
-  echo [app-call] Full log:
-  echo ────────────────────────────────────────
-  type "%LOG_PATH%"
-  echo ────────────────────────────────────────
-  echo.
-  echo [app-call] Log saved to: %LOG_PATH%
+  echo [app-call] Error log saved to: %LOG_PATH%
   echo.
   pause
   exit /b %APP_CALL_EXIT%
 )
 
-type "%LOG_PATH%"
 exit /b 0

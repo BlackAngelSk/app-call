@@ -40,18 +40,14 @@ $env:RUST_BACKTRACE = "1"
 Write-Host "[app-call] Building and starting (log: $logPath)..." -ForegroundColor Cyan
 Write-Host ""
 
-cargo run -p desktop @args *>&1 | Tee-Object -FilePath $logPath -Append
+# Redirect only stderr to log file; stdout goes to console directly.
+cargo run -p desktop @args 2>>$logPath
 $exitCode = $LASTEXITCODE
 
 if ($exitCode -ne 0) {
     Write-Host ""
     Write-Host "[app-call] Process exited with error code $exitCode." -ForegroundColor Red
-    Write-Host "[app-call] Full log:" -ForegroundColor Yellow
-    Write-Host "────────────────────────────────────────"
-    Get-Content $logPath | Write-Host
-    Write-Host "────────────────────────────────────────"
-    Write-Host ""
-    Write-Host "[app-call] Log saved to: $logPath" -ForegroundColor Yellow
+    Write-Host "[app-call] Error log saved to: $logPath" -ForegroundColor Yellow
     Write-Host ""
     Read-Host "Press Enter to exit"
 }
