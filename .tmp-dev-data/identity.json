@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "display_name": "local-user",
+  "privacy_mode": "Balanced",
+  "root_signing_secret_hex": "699d677e43bf8991314264189121528fddc419082e8cfdef37d0d3cc10ef329e",
+  "root_exchange_secret_hex": "8528191698073efd1bc1be4e3a6bbd69382bcd2db94e29e5ad16e618129d20cd",
+  "device_label": "primary-device",
+  "device_signing_secret_hex": "eb81b02b0e1683cb00e4b236fad30677d85ff6a02f74322e6af98e7ec2f1bf91"
+}
