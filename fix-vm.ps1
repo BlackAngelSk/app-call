@@ -51,9 +51,9 @@ Write-Host "[app-call] $modelPath has required types. OK." -ForegroundColor Gree
 
 # Clean build
 Write-Host "[app-call] Cleaning build..." -ForegroundColor Cyan
-cargo clean 2>&1 | Out-Null
+& cmd /c "cargo clean 2>&1" | Out-Null
 Write-Host "[app-call] Building..." -ForegroundColor Cyan
-& cargo build -p desktop 2>&1 | Write-Host
+& cmd /c "cargo build -p desktop 2>&1"
 $buildExit = $LASTEXITCODE
 if ($buildExit -eq 0) {
     Write-Host ""
