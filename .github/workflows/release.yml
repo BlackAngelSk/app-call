@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release -p desktop
+
+      - name: Prepare asset
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          TRIPLE="x86_64-unknown-linux-gnu"
+          ASSET="app-call-v${VERSION}-${TRIPLE}"
+          mkdir -p dist
+          # The binary name from Cargo is "desktop", rename to "app-call"
+          cp target/release/desktop "dist/app-call"
+          # Create tar.gz
+          cd dist && tar czf "../${ASSET}.tar.gz" app-call && cd ..
+          # Generate checksum
+          sha256sum "${ASSET}.tar.gz" | awk '{print $1}' > "${ASSET}.tar.gz.sha256"
+          # Move artifacts to release dir
+          mkdir -p artifacts
+          mv "${ASSET}.tar.gz" "${ASSET}.tar.gz.sha256" artifacts/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-x86_64
+          path: artifacts/
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release -p desktop
+
+      - name: Prepare asset
+        env:
+          TAG: ${{ github.ref_name }}
+        shell: pwsh
+        run: |
+          $version = $env:TAG -replace '^v',''
+          $triple = "x86_64-pc-windows-msvc"
+          $asset = "app-call-v$version-$triple"
+          New-Item -ItemType Directory -Path dist -Force | Out-Null
+          # The binary name from Cargo is "desktop.exe", rename to "app-call.exe"
+          Copy-Item "target\release\desktop.exe" "dist\app-call.exe"
+          # Create zip
+          Compress-Archive -Path "dist\app-call.exe" -DestinationPath "$asset.zip"
+          # Generate checksum
+          $hash = (Get-FileHash -Algorithm SHA256 "$asset.zip").Hash.ToLower()
+          Set-Content -Path "$asset.zip.sha256" -Value $hash -NoNewline
+          # Move artifacts
+          New-Item -ItemType Directory -Path artifacts -Force | Out-Null
+          Move-Item "$asset.zip" artifacts/
+          Move-Item "$asset.zip.sha256" artifacts/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x86_64
+          path: artifacts/
+
+  create-release:
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/*

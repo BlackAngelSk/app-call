@@ -4,6 +4,7 @@ pub mod model;
 pub mod network;
 pub mod privacy;
 pub mod seed;
+pub mod updater;
 pub mod user_settings;
 
 pub use bootstrap::{load_or_create_app, update_display_name};
@@ -12,4 +13,5 @@ pub use model::{AppModel, ChannelKind, ChannelSummary, PeerAddress, ProtocolMess
 pub use network::{IncomingChat, NetworkEvent, NetworkState};
 pub use privacy::PrivacyMode;
 pub use seed::demo_app;
+pub use updater::{handle_update_flags, try_background_check};
 pub use user_settings::{load_or_create_user_settings, save_user_settings, UserSettings};

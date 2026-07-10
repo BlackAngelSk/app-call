@@ -110,6 +110,52 @@ On first start the app creates a persisted local identity:
 - **Windows:** `%APPDATA%\app-call\identity.json`
 - **Override:** set `APP_CALL_DATA_DIR` before running
 
+## Auto-Update
+
+The app can **self-update** by downloading new releases from GitHub.
+
+### Check for updates
+
+```sh
+./target/release/desktop --check-update
+# or
+desktop --check-update
+```
+
+### Install update automatically
+
+```sh
+./target/release/desktop --update
+# or
+desktop --update
+```
+
+The `--update` flag downloads the latest release for your platform from
+[GitHub Releases](https://github.com/BlackAngelSk/app-call/releases/latest),
+verifies its SHA-256 checksum, replaces the running binary, and restarts.
+
+### Background check
+
+On every normal startup the app silently checks GitHub for a newer version
+and prints a hint to stderr if one is available. To disable this:
+
+```sh
+APP_CALL_NO_UPDATE_CHECK=1 ./start.sh
+```
+
+### Creating a release
+
+Push a tag to trigger the CI build:
+
+```sh
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+The GitHub Actions workflow (`.github/workflows/release.yml`) will build
+Linux and Windows binaries, generate SHA-256 checksums, and publish them
+as release assets.
+
 ## Current Scope
 
 - Rust workspace with reusable core crate and native desktop binary
@@ -118,6 +164,7 @@ On first start the app creates a persisted local identity:
 - **Networked console mode** that works headless / in VMs (auto-selected when no GPU is available)
 - GUI mode using egui/eframe (on systems with GPU)
 - User settings persistence
+- **Self-updating binary** with GitHub Releases integration and SHA-256 checksum verification
 
 ## Workspace Layout
 

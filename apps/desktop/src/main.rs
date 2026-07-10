@@ -1,4 +1,7 @@
-use app_core::{AppModel, ChannelKind, NetworkEvent, NetworkState, UserSettings};
+use app_core::{
+    handle_update_flags, try_background_check, AppModel, ChannelKind, NetworkEvent, NetworkState,
+    UserSettings,
+};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
@@ -12,6 +15,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use eframe::egui;
 
 fn main() {
+    // Handle self-update CLI flags before anything else.
+    if !handle_update_flags() {
+        return;
+    }
+
     let data_dir = resolve_data_dir();
     let startup_log_paths = startup_log_paths(&data_dir);
     reset_startup_logs(&startup_log_paths);
@@ -34,6 +42,9 @@ fn main() {
         std::process::exit(1);
     });
     append_startup_log(&startup_log_paths, "identity loaded");
+
+    // Silent background check for newer versions on GitHub.
+    try_background_check();
 
     let settings = match app_core::load_or_create_user_settings(&data_dir) {
         Ok(settings) => {
